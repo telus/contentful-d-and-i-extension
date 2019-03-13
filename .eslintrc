@@ -1,0 +1,8 @@
+{
+  "extends": "@telus/eslint-config",
+  "parser": "babel-eslint",
+  "rules": {
+    "react/jsx-filename-extension": "false",
+    "react/prefer-stateless-function": "false"
+  }
+}
