@@ -1,25 +1,44 @@
 import React, { Component } from 'react'
 import alex from 'alex'
 import reporter from 'vfile-reporter'
+import { init as initContentful } from 'contentful-ui-extensions-sdk'
 
 import './App.css'
-
-const sampleText = 'With us on your side, you too can feel like a chairman of the board.  To boldly go where no man has gone before.  We pride ourselves on the workmanship of our products.  Damn, he\'ll love these prices.\nShe\'ll love that new phone!'
 
 const report = vfile => reporter([vfile], { defaultName: '-' })
 
 class App extends Component {
   constructor (props) {
     super(props)
-    const vfile = alex.text(sampleText)
     this.state = {
-      diReport: report(vfile),
-      text: sampleText
+      diReport: '',
+      text: ''
     }
+  }
+
+  componentDidMount () {
+    initContentful((extension) => {
+      extension.window.startAutoResizer()
+      const { field } = extension
+      this.field = field
+      this.setState({
+        text: field.getValue()
+      })
+      this.detachValueChangeHandler = field.onValueChanged((value) => {
+        this.setState({
+          text: value || ''
+        })
+      })
+    })
+  }
+
+  componentWillUnmount () {
+    this.detachValueChangeHandler()
   }
 
   onChange = ({ target: { value } }) => {
     const vfile = alex.text(value)
+    this.field.setValue(value)
     this.setState({
       diReport: report(vfile),
       text: value
@@ -29,17 +48,14 @@ class App extends Component {
   render () {
     const { diReport, text } = this.state
     return (
-      <div>
-        <div>
-          <pre>
-            <textarea style={{ fontSize: '14pt', width: '100%' }} onChange={this.onChange} value={text} />
-          </pre>
-        </div>
-        <div>
-          <pre>
-            <code>{diReport}</code>
-          </pre>
-        </div>
+      <div className="cf-form-field">
+        <input type="text" onChange={this.onChange} className="cf-form-input" value={text} />
+        <div className="cf-form-hint">Diversity and Inclusion Report:</div>
+        {diReport.split('\n').map(line => (
+          <div key={line} className="cf-form-hint">
+            {line}
+          </div>
+        ))}
       </div>
     )
   }
